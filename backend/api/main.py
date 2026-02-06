@@ -91,6 +91,28 @@ async def update_task(task_id: int, task_update: Task, current_user: User = Depe
     session.refresh(task)
     return task
 
+@app.patch("/api/tasks/{task_id}", response_model=Task)
+async def patch_task(
+    task_id: int,
+    completed: Optional[bool] = None,
+    title: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    task = session.get(Task, task_id)
+    if not task or task.owner_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    if completed is not None:
+        task.completed = completed
+    if title is not None:
+        task.title = title
+    
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
 @app.delete("/api/tasks/{task_id}")
 async def delete_task(task_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     task = session.get(Task, task_id)
