@@ -1,0 +1,57 @@
+# Phase 2: System Architecture Plan
+
+This document outlines the 'HOW' - the technical architecture, folder structure, and interaction patterns for the web application.
+
+## 1. Monorepo Folder Structure
+The project will be structured as a monorepo to facilitate development across the frontend and backend.
+
+```
+/
+├── frontend/             # Next.js 16+ Application
+│   ├── app/
+│   ├── components/
+│   └── ...
+├── backend/              # Python FastAPI Application
+│   ├── app/
+│   │   ├── api/          # API endpoint definitions
+│   │   ├── core/         # Configuration, security
+│   │   ├── db/           # Database session, models
+│   │   └── main.py
+│   ├── tests/
+│   └── ...
+├── specs/                # Specification documents
+│   ├── api/
+│   │   └── rest-endpoints.md
+│   └── database/
+│       └── schema.md
+├── .gitignore
+├── speckit.constitution
+├── speckit.plan
+├── speckit.specify
+└── speckit.tasks
+```
+
+## 2. Database Schema
+The database will contain two primary tables: `users` and `tasks`. The `tasks` table will have a foreign key relationship to the `users` table to enforce ownership.
+
+- **Detailed Schema**: See `specs/database/schema.md`.
+
+## 3. API Endpoint Mapping
+The backend will expose a set of RESTful endpoints for the frontend to consume. All endpoints will be prefixed with `/api`.
+
+- **Endpoint Definitions**: See `specs/api/rest-endpoints.md`.
+
+## 4. Authentication Strategy (JWT Flow)
+The authentication process ensures that only valid users can access the backend API.
+
+1.  **User Authentication**: The user signs in or signs up via the Better Auth UI embedded in the Next.js frontend.
+2.  **JWT Issuance**: Upon successful authentication, Better Auth's service redirects back to the frontend, providing a short-lived JWT.
+3.  **Token Storage**: The Next.js application stores this JWT securely in the client (e.g., in a secure, HttpOnly cookie or local storage, depending on the chosen library).
+4.  **API Request Authorization**: For every API call to the FastAPI backend (e.g., to fetch tasks), the frontend attaches the JWT to the `Authorization` header in the format: `Bearer <jwt_token>`.
+5.  **Backend Verification**:
+    *   The FastAPI backend receives the request.
+    *   A middleware dependency inspects the `Authorization` header.
+    *   It decodes and validates the JWT using the shared `BETTER_AUTH_SECRET`. Verification checks the signature, expiration time, and issuer.
+    *   The middleware extracts the `user_id` (or `sub`) from the token payload.
+    *   This `user_id` is attached to the request state and used by the endpoint logic to query the database.
+6.  **Protected Resource Access**: If the JWT is valid, the endpoint proceeds, fetching/modifying data scoped to that `user_id`. If the token is invalid, expired, or missing, the middleware returns a `401 Unauthorized` error.

@@ -1,0 +1,30 @@
+# Phase 2: Full-Stack Web Application Constitution
+
+This document defines the technical stack, architectural principles, and non-negotiable constraints for the 'Evolution of Todo' Phase 2 Web MVP.
+
+## 1. Core Technologies
+- **Frontend**: Next.js 16+ (App Router)
+- **UI Styling**: Tailwind CSS
+- **Backend**: Python FastAPI
+- **Database ORM**: SQLModel
+- **Database**: Neon Serverless PostgreSQL
+- **Authentication**: Better Auth (https://betterauth.dev)
+
+## 2. Architectural Principles
+- **Monorepo Structure**: The project will be organized in a monorepo with distinct `/frontend` and `/backend` directories to manage the distributed system components logically.
+- **Stateless API**: The backend API must be stateless. All state required to process a request must be provided by the client (i.e., via JWT).
+- **Service Communication**: The Next.js frontend will communicate with the FastAPI backend via RESTful API calls over HTTP.
+
+## 3. Security & Authentication
+- **Authentication Provider**: User authentication (signup/signin) is handled exclusively by the Better Auth service.
+- **Authorization Mechanism**: All backend API routes, unless explicitly marked public (e.g., health checks), MUST be secured.
+- **JWT Verification**: The FastAPI backend will use a JWT plugin to verify the JSON Web Token (JWT) provided in the `Authorization` header of incoming requests. The token must be issued by Better Auth.
+- **Shared Secret**: A common `BETTER_AUTH_SECRET` will be used by both the Better Auth service and the FastAPI backend to sign and verify JWTs, ensuring trust.
+
+## 4. Database
+- **Provider**: Neon Serverless PostgreSQL will be used for its scalability and ease of management.
+- **Schema Management**: SQLModel will be used to define the database schema as Python classes. Migrations will be handled by Alembic (integrated with SQLModel).
+
+## 5. Non-Negotiables
+- **Task Ownership**: API logic must enforce that users can only access and modify their own tasks. Direct object access without ownership verification is forbidden.
+- **Task ID Commenting**: Every source code file created or modified during implementation must include a comment referencing the corresponding Task ID from `speckit.tasks`.

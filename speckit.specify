@@ -1,0 +1,22 @@
+# Phase 2: Web MVP Specifications
+
+This document defines the functional requirements and user-facing features for the multi-user web application.
+
+## 1. User Authentication & Journey
+- **US-101: User Signup**: A new user must be able to visit the application and sign up for a new account using the Better Auth interface.
+- **US-102: User Signin**: A returning user must be able to sign in to their account using the Better Auth interface.
+- **US-103: Session Management**: Upon successful signin, the user is issued a JWT, which is stored securely in the frontend. This JWT is used to authenticate subsequent API requests.
+- **US-104: Signout**: A signed-in user must have an option to sign out, which invalidates their local session.
+
+## 2. Core Task Management (Multi-User)
+- **FU-201: Task Ownership**: All tasks are owned by a specific user. A user can **only** view, create, edit, or delete tasks associated with their user ID. The system must prevent users from accessing tasks belonging to other users.
+- **FU-202: View Tasks**: A signed-in user should see a list of all their tasks upon loading the main application view. Each task in the list should display its title and completion status.
+- **FU-203: Create Task**: A signed-in user must be able to add a new task. The task is created with a default completion status of 'false' and is immediately visible in their task list.
+- **FU-204: Update Task**: A signed-in user must be able to edit the title of an existing task they own.
+- **FU-205: Toggle Task Completion**: A signed-in user must be able to mark a task as complete or incomplete. This action should be a single-click or tap interaction (e.g., a checkbox).
+- **FU-206: Delete Task**: A signed-in user must be able to permanently delete a task they own.
+
+## 3. REST API Requirements
+- **API-301: Secure Endpoints**: All API endpoints for task management must be protected and require a valid JWT for access.
+- **API-302: User-Scoped Queries**: The backend API must use the `user_id` extracted from the JWT to scope all database queries (SELECT, INSERT, UPDATE, DELETE) for tasks.
+- **API-303: CRUD Operations**: The API must provide distinct RESTful endpoints for all user-facing CRUD operations (Create, Read, Update, Delete) as defined in `specs/api/rest-endpoints.md`.

@@ -1,0 +1,29 @@
+# Phase 2: Implementation Task Breakdown
+
+This file lists the atomic engineering tasks required to build the Web MVP.
+
+---
+### Backend: Database & Core Setup
+---
+- **T-201**: **Database Models**: Create `backend/app/db/models.py` containing the `User` and `Task` SQLModel classes as defined in `specs/database/schema.md`.
+- **T-202**: **Database Connection**: Implement a database connection manager in `backend/app/db/session.py` to handle the connection to the Neon Serverless PostgreSQL instance.
+- **T-203**: **Initial Project Structure**: Set up the initial FastAPI project structure in the `/backend` directory, including `main.py` and required configuration files.
+
+---
+### Backend: Authentication & Security
+---
+- **T-204**: **Auth Middleware**: Implement JWT verification middleware in `backend/app/core/security.py`. This middleware will decode the `Authorization` header and extract the user's `auth_id`. It will include a dependency function to be used on protected routes.
+- **T-205**: **User Sync Endpoint**: Create the `POST /api/users/sync` endpoint in `backend/app/api/endpoints/users.py`. This endpoint will use the `auth_id` from the JWT to create a new user in the database if one doesn't already exist.
+
+---
+### Backend: Task CRUD API
+---
+- **T-206**: **Create & List Tasks**: Implement the `POST /api/tasks` and `GET /api/tasks` endpoints in `backend/app/api/endpoints/tasks.py`. Ensure all database queries are scoped to the authenticated user.
+- **T-207**: **Update & Delete Tasks**: Implement the `PUT /api/tasks/{task_id}` and `DELETE /api/tasks/{task_id}` endpoints. Add logic to verify that the user making the request is the owner of the task before performing the operation.
+
+---
+### Frontend: UI & Component Development
+---
+- **T-208**: **Initial Project Structure**: Set up the initial Next.js project in the `/frontend` directory using the App Router.
+- **T-209**: **Authentication UI**: Build the UI components for Sign Up, Sign In, and Sign Out. Integrate the Better Auth library to handle the authentication flow.
+- **T-210**: **Task Display & Interaction**: Create the main UI for displaying, adding, updating, and deleting tasks. Implement the API client functions to communicate with the backend API, attaching the JWT to all requests.
