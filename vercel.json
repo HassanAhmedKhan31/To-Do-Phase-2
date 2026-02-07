@@ -1,8 +1,18 @@
 {
+  "builds": [
+    {
+      "src": "backend/api/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/main.py"
+      "destination": "/backend/api/main.py"
     }
   ]
 }

@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
 
 from .database import create_db_and_tables, get_session
 from .models import User, Task
@@ -122,7 +122,7 @@ async def delete_task(task_id: int, current_user: User = Depends(get_current_use
     session.commit()
     return {"ok": True}
 
-@app.put("/api/tasks/{task_id}/toggle", response_model=Task)
+@app.patch("/api/tasks/{task_id}/toggle", response_model=Task)
 async def toggle_task(task_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     task = session.get(Task, task_id)
     if not task or task.owner_id != current_user.id:

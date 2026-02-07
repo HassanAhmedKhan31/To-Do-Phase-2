@@ -54,3 +54,64 @@ class TaskManager:
             self._tasks.remove(task_to_delete)
             return True
         return False
+
+# Example of Trinity Reasoning Loop Integration
+import os
+import openai
+
+def get_ai_suggestion_with_reasoning(prompt: str):
+    """
+    Demonstrates a two-turn conversation with the Trinity model to get a suggestion
+    and follow up on its reasoning.
+    """
+    client = openai.OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key="sk-or-v1-defe4cdd3..." # Replace with your actual key or load from env
+    )
+
+    # --- First Turn: Initial request with reasoning enabled ---
+    messages = [
+        {"role": "user", "content": prompt}
+    ]
+    
+    completion = client.chat.completions.create(
+        model="arcee-ai/trinity-large-preview:free",
+        messages=messages,
+        extra_body={"reasoning": {"enabled": True}}
+    )
+
+    first_response = completion.choices[0].message
+    reasoning_details = completion.choices[0].reasoning_details
+    
+    print("--- AI's Initial Response ---")
+    print(first_response.content)
+    print("\n--- Reasoning Details Captured ---")
+    print(reasoning_details)
+
+    # --- Second Turn: Follow-up question, passing back reasoning_details ---
+    messages.append(first_response) # Add AI's first response to history
+    messages.append({
+        "role": "user",
+        "content": "Can you elaborate on your reasoning for that suggestion?"
+    })
+
+    follow_up_completion = client.chat.completions.create(
+        model="arcee-ai/trinity-large-preview:free",
+        messages=messages,
+        extra_body={"reasoning": {
+            "enabled": True,
+            "details": reasoning_details # Pass back the captured details
+        }}
+    )
+
+    second_response = follow_up_completion.choices[0].message
+    
+    print("\n--- AI's Follow-up Response (Elaborating on Reasoning) ---")
+    print(second_response.content)
+    
+    return first_response.content, second_response.content
+
+# Example usage:
+# if __name__ == "__main__":
+#     initial_prompt = "Give me a creative name for a new task management app."
+#     get_ai_suggestion_with_reasoning(initial_prompt)
