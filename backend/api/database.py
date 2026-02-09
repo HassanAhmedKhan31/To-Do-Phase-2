@@ -1,9 +1,17 @@
-# T-303: Switch to Neon PostgreSQL
+# T-203: Implement the database engine and session management.
 import os
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import create_engine, Session, SQLModel
+from dotenv import load_dotenv
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-engine = create_engine(DATABASE_URL, echo=True)
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    # In a real app, you'd want a more robust way to handle this,
+    # but for the hackathon, we'll keep it simple.
+    DATABASE_URL = "sqlite:///database.db"
+
+engine = create_engine(DATABASE_URL)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)

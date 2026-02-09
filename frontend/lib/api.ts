@@ -1,55 +1,56 @@
-const API_BASE_URL = "http://127.0.0.1:8000"; // Assuming backend runs on port 8000
+// frontend/lib/api.ts
+import { getAuthToken } from './auth';
+import { Task } from '@/lib/types';
 
-export interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  completed: boolean;
-  owner_id: number;
-}
+const API_BASE_URL = '/api'; // Assumes /api rewrites to backend
 
-// Function to get a dummy token for now. In a real app, this would come from authentication.
-const getAuthToken = (): string => {
-  // In a real application, this would come from a secure authentication flow.
-  if (typeof window !== "undefined") {
-    // 1. Check localStorage
-    const localStorageToken = localStorage.getItem("auth_token");
-    if (localStorageToken) return localStorageToken;
+export const fetchApi = async (
+    endpoint: string,
+    method: string = 'GET',
+    body: any = null,
+    includeAuth: boolean = true
+) => {
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
 
-    // 2. Check for the specific cookie
-    const cookieToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("better-auth.session_token="))
-      ?.split("=")[1];
-    if (cookieToken) return cookieToken;
-  }
+    if (includeAuth) {
+        const token = getAuthToken();
+        if (!token) {
+            // In a real app, you might redirect to login or throw a specific error
+            throw new Error('No authentication token found.');
+        }
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
-  // 3. Fallback to placeholder
-  return "YOUR_AUTH_TOKEN";
+    const config: RequestInit = {
+        method,
+        headers,
+    };
+
+    if (body) {
+        config.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+    if (response.status === 204) { // No Content
+        return null;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMessage = data.detail || 'Something went wrong';
+        throw new Error(errorMessage);
+    }
+
+    return data;
 };
 
-export const fetchTasks = async (): Promise<Task[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/tasks/`, {
-    headers: {
-      Authorization: `Bearer ${getAuthToken()}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch tasks");
-  }
-  return response.json();
-};
-
-export const toggleTaskCompletion = async (taskId: number): Promise<Task> => {
-  const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/toggle`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getAuthToken()}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Failed to toggle task completion");
-  }
-  return response.json();
-};
+// Task-specific API calls
+export const getTasks = () => fetchApi('/tasks/');
+export const createTask = (task: Partial<Task>) => fetchApi('/tasks/', 'POST', task);
+export const updateTask = (id: number, task: Partial<Task>) => fetchApi(`/tasks/${id}`, 'PUT', task);
+export const toggleTaskCompletion = (id: number) => fetchApi(`/tasks/${id}/toggle`, 'PATCH');
+export const deleteTask = (id: number) => fetchApi(`/tasks/${id}`, 'DELETE');
