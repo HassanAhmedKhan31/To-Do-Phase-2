@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "backend/api/main.py",
@@ -13,6 +14,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/backend/api/main.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
   ]
 }
